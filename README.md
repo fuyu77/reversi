@@ -1,0 +1,2 @@
+# othello
+Othello game.
