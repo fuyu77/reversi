@@ -1,2 +1,2 @@
-# オセロ（リバーシ）
+# Reversi
 JavaScriptのオセロ（リバーシ）です。
