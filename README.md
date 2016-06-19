@@ -1,2 +1,2 @@
-# Othello
-Othello game.
+# オセロ（リバーシ）
+JavaScriptのオセロ（リバーシ）です。
