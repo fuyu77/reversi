@@ -9,7 +9,14 @@
 </head>
 
 <body>
-  <canvas id="reversiCanvas" width="800.5" height="800.5"></canvas>
+  <div id="wrapper">
+    <canvas id="reversiCanvas" width="800.5" height="800.5"></canvas>
+  </div>
+  <form>
+    <button type="button" class="vs-white" id="a">先手（黒）でNew Game</button>
+    <button type="button" class="vs-black" id="b"> 後手（白）でNew Game</button>
+    <button type="button" class="vs-person" id="c">人対人でNew Game</button>
+  </form>
   <script src="reversi.js"></script>
 </body>
 
