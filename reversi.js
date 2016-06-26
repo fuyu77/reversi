@@ -1,35 +1,70 @@
 const BOARD_SIZE = 8;
 const SQUARE_LENGTH = 100;
-const ANTI_ANTI_ALIASING = 0.5;
-//空白を0、黒（先手）を1、白（後手）を-1とする。-1をかけることによってターンの切り替えを表現する。
 const EMPTY = 0;
 const BLACK = 1;
 const WHITE = -1;
 
-/***********************************
- * Reversiオブジェクトのプロパティ・メソッド
- ***********************************/
-//各マス目の状態を表す二次元配列boardと黒か白のターンを表すturnをプロパティとする。
+var button = document.getElementById("a");
+button.onclick = function () {
+  newGame(WHITE);
+};
+
+var button2 = document.getElementById("b");
+button2.onclick = function () {
+  newGame(BLACK);
+}
+
+var button3 = document.getElementById("c");
+button3.onclick = function () {
+  newGame(null);
+}
+
+function getInitialBoard() {
+  var initialBoard = [];
+  for (var i = 0; i < BOARD_SIZE + 2; i++)
+    initialBoard[i] = [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY];
+  initialBoard[5][4] = BLACK;
+  initialBoard[4][5] = BLACK;
+  initialBoard[4][4] = WHITE;
+  initialBoard[5][5] = WHITE;
+  return initialBoard;
+}
+
+function fillCircle(x, y, r, color) {
+  context.beginPath();
+  context.arc(x, y, r, 0, 2 * Math.PI, true);
+  context.fillStyle = color;
+  context.fill();
+}
+
+function getBoardCoordinate(axis) {
+  var rect = canvas.getBoundingClientRect();
+  switch (axis) {
+    case "x":
+      return Math.ceil((event.pageX - rect.left) / SQUARE_LENGTH);
+    case "y":
+      return Math.ceil((event.pageY - rect.top) / SQUARE_LENGTH);
+  }
+}
+
 var Reversi = function (board, turn) {
   this.board = board;
   this.turn = turn;
 }
 
-//配列boardの値に従って石を黒か白に描画する。
 Reversi.prototype.drawDisks = function () {
   for (boardCoordinateX = 1; boardCoordinateX <= BOARD_SIZE; boardCoordinateX++)
     for (boardCoordinateY = 1; boardCoordinateY <= BOARD_SIZE; boardCoordinateY++)
       switch (this.board[boardCoordinateX][boardCoordinateY]) {
         case BLACK:
-          fillCircle(SQUARE_LENGTH * (boardCoordinateX - 1 / 2) + ANTI_ANTI_ALIASING, SQUARE_LENGTH * (boardCoordinateY - 1 / 2) + ANTI_ANTI_ALIASING, 1 / 2 * SQUARE_LENGTH - 6, "black");
+          fillCircle(SQUARE_LENGTH * (boardCoordinateX - 1 / 2) + 0.5, SQUARE_LENGTH * (boardCoordinateY - 1 / 2) + 0.5, 1 / 2 * SQUARE_LENGTH - 6, "black");
           break;
         case WHITE:
-          fillCircle(SQUARE_LENGTH * (boardCoordinateX - 1 / 2) + ANTI_ANTI_ALIASING, SQUARE_LENGTH * (boardCoordinateY - 1 / 2) + ANTI_ANTI_ALIASING, 1 / 2 * SQUARE_LENGTH - 6, "white");
+          fillCircle(SQUARE_LENGTH * (boardCoordinateX - 1 / 2) + 0.5, SQUARE_LENGTH * (boardCoordinateY - 1 / 2) + 0.5, 1 / 2 * SQUARE_LENGTH - 6, "white");
           break;
       }
 }
 
-//特定のマス目board[boardCoordinateX][boardCoordinateY]の周囲8方向のいずれかの方向についてひっくり返せる石がいくつあるか数える。directionX,directionYを-1から1の範囲で組み合せる（ただしdirectionX == 0 && directionY == 0を除く）ことによって、方向を指定する。
 Reversi.prototype.countFlippableDisksInEachDirection = function (directionX, directionY, boardCoordinateX, boardCoordinateY, turn) {
   if (this.board[boardCoordinateX][boardCoordinateY] == EMPTY) {
     var flippableDisksInEachDirection = 0;
@@ -41,12 +76,10 @@ Reversi.prototype.countFlippableDisksInEachDirection = function (directionX, dir
   }
 }
 
-//特定のマス目board[boardCoordinateX][boardCoordinateY]に石を置いたときにひっくり返せる石がいくつあるか数える。ountFlippableDisksInEachDirectionの返り値を8方向について足し合せている。
 Reversi.prototype.countFlippableDisks = function (boardCoordinateX, boardCoordinateY, turn) {
   return this.countFlippableDisksInEachDirection(0, -1, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(1, -1, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(1, 0, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(1, 1, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(0, 1, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(-1, 1, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(-1, 0, boardCoordinateX, boardCoordinateY, turn) + this.countFlippableDisksInEachDirection(-1, -1, boardCoordinateX, boardCoordinateY, turn);
 }
 
-//石をひっくり返す。特定のマス目board[boardCoordinateX][boardCoordinateY]の周囲8方向について、countFlippableDisksInEachDirectionの返り値の数だけ現在のターンを代入している。
 Reversi.prototype.flipDisks = function (boardCoordinateX, boardCoordinateY) {
   for (directionX = -1; directionX <= 1; directionX++)
     for (directionY = -1; directionY <= 1; directionY++) {
@@ -57,7 +90,6 @@ Reversi.prototype.flipDisks = function (boardCoordinateX, boardCoordinateY) {
   this.board[boardCoordinateX][boardCoordinateY] = this.turn;
 }
 
-//石を置けるマス目がいくつあるか数える。ゲーム終了判定のために、現在と逆のターンについても調べられるようにしている。
 Reversi.prototype.countPuttablePositions = function (turn) {
   var puttablePositions = 0;
   for (boardCoordinateX = 1; boardCoordinateX <= BOARD_SIZE; boardCoordinateX++)
@@ -67,19 +99,28 @@ Reversi.prototype.countPuttablePositions = function (turn) {
   return puttablePositions;
 }
 
-//打てるマス目が無いときに、ターンを逆にする（パスする）。
+Reversi.prototype.countPuttablePositionsExceptAroundCorners = function (turn) {
+  var puttablePositionsExceptAroundCorners = 0;
+  for (boardCoordinateX = 1; boardCoordinateX <= BOARD_SIZE; boardCoordinateX++)
+    for (boardCoordinateY = 1; boardCoordinateY <= BOARD_SIZE; boardCoordinateY++) {
+      if ((boardCoordinateX == 1 && boardCoordinateY == 2) || (boardCoordinateX == 2 && boardCoordinateY == 1) || (boardCoordinateX == 1 && boardCoordinateY == 7) || (boardCoordinateX == 2 && boardCoordinateY == 8) || (boardCoordinateX == 7 && boardCoordinateY == 1) || (boardCoordinateX == 8 && boardCoordinateY == 2) || (boardCoordinateX == 7 && boardCoordinateY == 8) || (boardCoordinateX == 8 && boardCoordinateY == 7) || (boardCoordinateX == 2 && boardCoordinateY == 2) || (boardCoordinateX == 2 && boardCoordinateY == 7) || (boardCoordinateX == 7 && boardCoordinateY == 2) || (boardCoordinateX == 7 && boardCoordinateY == 7))
+        continue;
+      if (this.countFlippableDisks(boardCoordinateX, boardCoordinateY, turn) > 0)
+        puttablePositionsExceptAroundCorners++;
+    }
+  return puttablePositionsExceptAroundCorners;
+}
+
 Reversi.prototype.pass = function () {
   if (this.countPuttablePositions(this.turn) == 0)
     this.turn = -this.turn
 }
 
-//打てるマス目が無いときに、パスのメッセージを表示する。ただし、ゲーム終了時（逆のターンでもパスとなる時）には表示しない。
 Reversi.prototype.alertPassMessage = function () {
   if (this.countPuttablePositions(this.turn) == 0 && this.countPuttablePositions(-this.turn) != 0)
     return alert("打てる場所がないのでパスされました。");
 }
 
-//黒か白について、盤面に石がいくつあるか数える。
 Reversi.prototype.countDisks = function (color) {
   var black = 0;
   var white = 0;
@@ -101,7 +142,6 @@ Reversi.prototype.countDisks = function (color) {
   }
 }
 
-//ゲーム終了時のメッセージを表示する。
 Reversi.prototype.alertResultMessage = function () {
   if (this.countDisks("black") > this.countDisks("white"))
     return alert(String(this.countDisks("black")) + "対" + String(this.countDisks("white")) + "で黒の勝ちです！");
@@ -111,80 +151,183 @@ Reversi.prototype.alertResultMessage = function () {
     return alert(String(this.countDisks("white")) + "対" + String(this.countDisks("black")) + "の引き分けです！");
 }
 
-/***********************************
- * その他関数定義
- ***********************************/
-//初期の盤面を二次元配列で表現する。マス目の座標と配列の座標の値を一致させるため、また、駒をひっくり返す関数を正しく機能させるために、8 * 8ではなく一辺ずつ余裕をもたせた10 * 10の配列としている。
-function getInitialBoard() {
-  var initialBoard = [];
-  for (var i = 0; i < BOARD_SIZE + 2; i++)
-    initialBoard[i] = [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY];
-  initialBoard[5][4] = BLACK;
-  initialBoard[4][5] = BLACK;
-  initialBoard[4][4] = WHITE;
-  initialBoard[5][5] = WHITE;
-  return initialBoard;
+Reversi.prototype.moveByAi = function () {
+  this.flipDisksByAi();
+  this.drawDisks();
+  this.turn = -this.turn;
+  this.alertPassMessage();
+  this.pass();
 }
 
-//円を描画する。
-function fillCircle(x, y, r, color) {
-  context.beginPath();
-  context.arc(x, y, r, 0, 2 * Math.PI, true);
-  context.fillStyle = color;
-  context.fill();
-}
+Reversi.prototype.flipDisksByAi = function () {
+  var self = this;
+  var flag = true;
 
-//マス目の座標を取得する。event.pageX/Yはブラウザの絶対座標のため、canvas要素の矩形オブジェクトの座標を基準とした総体座標をマス目の長さで割り、切り上げることにっよて、1から8までの整数の座標を取得している。
-function getBoardCoordinate(axis) {
-  var rect = canvas.getBoundingClientRect();
-  switch (axis) {
-    case "x":
-      return Math.ceil((event.pageX - rect.left) / SQUARE_LENGTH);
-    case "y":
-      return Math.ceil((event.pageY - rect.top) / SQUARE_LENGTH);
+  function flipDisksAccordingToPuttablePositionsByOpponent(boardCoordinateX, boardCoordinateY, puttablePositionsByOpponent) {
+    var reversiVirtual = new Reversi(copyMultidimentionalArray(self.board), self.turn);
+    if (flag && reversiVirtual.countFlippableDisks(boardCoordinateX, boardCoordinateY, reversiVirtual.turn) > 0) {
+      reversiVirtual.flipDisks(boardCoordinateX, boardCoordinateY);
+      reversiVirtual.turn = -reversiVirtual.turn;
+      if (reversiVirtual.countPuttablePositionsExceptAroundCorners(reversiVirtual.turn) == puttablePositionsByOpponent && (reversiVirtual.countFlippableDisks(1, 1, reversiVirtual.turn) == 0 || reversiVirtual.board[1][1] != EMPTY) && (reversiVirtual.countFlippableDisks(1, 8, reversiVirtual.turn) == 0 || reversiVirtual.board[1][8] != EMPTY) && (reversiVirtual.countFlippableDisks(8, 1, reversiVirtual.turn) == 0 || reversiVirtual.board[8][1] != EMPTY) && (reversiVirtual.countFlippableDisks(8, 8, reversiVirtual.turn) == 0 || reversiVirtual.board[8][8] != EMPTY)) {
+        self.flipDisks(boardCoordinateX, boardCoordinateY);
+        flag = false;
+      }
+    }
   }
+
+  function copyMultidimentionalArray(array) {
+    var newArray = [];
+    for (var i = 0; i < array.length; i++) {
+      if (Array.isArray(array[i])) {
+        newArray[i] = copyMultidimentionalArray(array[i]);
+      } else {
+        newArray[i] = array[i];
+      }
+    }
+    return newArray;
+  }
+
+  function flipDisksIfCanPut(boardCoordinateX, boardCoordinateY) {
+    if (flag && self.countFlippableDisks(boardCoordinateX, boardCoordinateY, self.turn) > 0) {
+      self.flipDisks(boardCoordinateX, boardCoordinateY);
+      flag = false;
+    }
+  }
+
+  function setPriority(flipDisksByAi, flag, n) {
+    if (self.board[1][1] != EMPTY) {
+      flipDisksByAi(1, 2, n);
+      flipDisksByAi(2, 1, n);
+      flipDisksByAi(2, 2, n);
+    }
+    if (self.board[1][8] != EMPTY) {
+      flipDisksByAi(1, 7, n);
+      flipDisksByAi(2, 8, n);
+      flipDisksByAi(2, 7, n);
+    }
+    if (self.board[8][1] != EMPTY) {
+      flipDisksByAi(7, 1, n);
+      flipDisksByAi(8, 2, n);
+      flipDisksByAi(7, 2, n);
+    }
+    if (self.board[1][1] != EMPTY) {
+      flipDisksByAi(7, 8, n);
+      flipDisksByAi(8, 7, n);
+      flipDisksByAi(7, 7, n);
+    }
+    flipDisksByAi(1, 1, n);
+    flipDisksByAi(1, 8, n);
+    flipDisksByAi(8, 1, n);
+    flipDisksByAi(8, 8, n);
+    flipDisksByAi(3, 3, n);
+    flipDisksByAi(3, 6, n);
+    flipDisksByAi(6, 3, n);
+    flipDisksByAi(6, 6, n);
+    flipDisksByAi(3, 4, n);
+    flipDisksByAi(3, 5, n);
+    flipDisksByAi(4, 3, n);
+    flipDisksByAi(5, 3, n);
+    flipDisksByAi(4, 6, n);
+    flipDisksByAi(5, 6, n);
+    flipDisksByAi(6, 4, n);
+    flipDisksByAi(6, 5, n);
+    flipDisksByAi(1, 3, n);
+    flipDisksByAi(1, 6, n);
+    flipDisksByAi(3, 1, n);
+    flipDisksByAi(6, 1, n);
+    flipDisksByAi(3, 8, n);
+    flipDisksByAi(6, 8, n);
+    flipDisksByAi(8, 3, n);
+    flipDisksByAi(8, 6, n);
+    flipDisksByAi(1, 4, n);
+    flipDisksByAi(1, 5, n);
+    flipDisksByAi(4, 1, n);
+    flipDisksByAi(5, 1, n);
+    flipDisksByAi(4, 8, n);
+    flipDisksByAi(5, 8, n);
+    flipDisksByAi(8, 4, n);
+    flipDisksByAi(8, 5, n);
+    flipDisksByAi(2, 3, n);
+    flipDisksByAi(2, 4, n);
+    flipDisksByAi(2, 5, n);
+    flipDisksByAi(2, 6, n);
+    flipDisksByAi(3, 2, n);
+    flipDisksByAi(4, 2, n);
+    flipDisksByAi(5, 2, n);
+    flipDisksByAi(6, 2, n);
+    flipDisksByAi(3, 7, n);
+    flipDisksByAi(4, 7, n);
+    flipDisksByAi(5, 7, n);
+    flipDisksByAi(6, 7, n);
+    flipDisksByAi(7, 3, n);
+    flipDisksByAi(7, 4, n);
+    flipDisksByAi(7, 5, n);
+    flipDisksByAi(7, 6, n);
+    if (flag) {
+      flipDisksByAi(1, 2, n);
+      flipDisksByAi(2, 1, n);
+      flipDisksByAi(1, 7, n);
+      flipDisksByAi(2, 8, n);
+      flipDisksByAi(7, 1, n);
+      flipDisksByAi(8, 2, n);
+      flipDisksByAi(7, 8, n);
+      flipDisksByAi(8, 7, n);
+      flipDisksByAi(2, 2, n);
+      flipDisksByAi(2, 7, n);
+      flipDisksByAi(7, 2, n);
+      flipDisksByAi(7, 7, n);
+    }
+  }
+
+  setPriority(flipDisksAccordingToPuttablePositionsByOpponent, true, 0);
+  for (puttablePositionsByOpponent = 1; puttablePositionsByOpponent <= 12; puttablePositionsByOpponent++) {
+    setPriority(flipDisksAccordingToPuttablePositionsByOpponent, false, puttablePositionsByOpponent);
+  }
+  setPriority(flipDisksIfCanPut, true);
 }
 
-/***********************************
- * オセロ実行
- ***********************************/
-//canvas要素を取得した後、その二次元の描画コンテクストを取得する。
 var canvas = document.getElementById("reversiCanvas");
 var context = canvas.getContext("2d");
-//Reversiオブジェクトのインスタンスをゲーム開始時の状態で生成する。
-var reversi = new Reversi(getInitialBoard(), BLACK);
-//マス目を区切る線を描画する。アンチエイリアシングによって1pxの線が2pxの薄い線になってしまうのを避けるために+o.5（ANTI_ANTI_ALIASING）している。
-context.beginPath();
-for (var i = 1; i < BOARD_SIZE; i++) {
-  context.moveTo(SQUARE_LENGTH * i + ANTI_ANTI_ALIASING, 0);
-  context.lineTo(SQUARE_LENGTH * i + ANTI_ANTI_ALIASING, SQUARE_LENGTH * BOARD_SIZE + ANTI_ANTI_ALIASING);
-  context.moveTo(0, SQUARE_LENGTH * i + ANTI_ANTI_ALIASING);
-  context.lineTo(SQUARE_LENGTH * BOARD_SIZE + ANTI_ANTI_ALIASING, SQUARE_LENGTH * i + ANTI_ANTI_ALIASING);
-}
-context.stroke();
-//オセロ盤面のボックスの範囲を示す4つの小さな黒点を描画する。
-fillCircle(2 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 2 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 3, "black");
-fillCircle(2 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 6 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 3, "black");
-fillCircle(6 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 2 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 3, "black");
-fillCircle(6 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 6 * SQUARE_LENGTH + ANTI_ANTI_ALIASING, 3, "black");
-//初期配置の石を描画する。
-reversi.drawDisks();
-//canvas要素をクリックしたときに実行される関数。
-canvas.onclick = function () {
-  //クリックされたマス目の座標を表す変数。
-  var boardCoordinateX_Clicked = getBoardCoordinate("x");
-  var boardCoordinateY_Clicked = getBoardCoordinate("y");
-  //クリックした場所に打てるとき
-  if (reversi.countFlippableDisks(boardCoordinateX_Clicked, boardCoordinateY_Clicked, reversi.turn) > 0) {
-    //石をひっくり返して描画してターンを切り替える。
-    reversi.flipDisks(boardCoordinateX_Clicked, boardCoordinateY_Clicked);
-    reversi.drawDisks();
-    reversi.turn = -reversi.turn
-    //切り替えたターンに打てるマス目が無いときは、パスのメッセージを表示して、更にターンを切り替える。
-    reversi.alertPassMessage();
-    reversi.pass();
-    //2回連続でパスとなるとき、ゲーム終了のメッセージを表示する。
-    if (reversi.countPuttablePositions(reversi.turn) == 0)
-      reversi.alertResultMessage();
+
+function newGame(aiTurn) {
+  var reversi = new Reversi(getInitialBoard(), BLACK);
+  context.fillStyle = "rgb(10, 160, 22)";
+  context.fillRect(0, 0, 800.5, 800.5);
+  context.beginPath();
+  for (var i = 1; i < BOARD_SIZE; i++) {
+    context.moveTo(SQUARE_LENGTH * i + 0.5, 0);
+    context.lineTo(SQUARE_LENGTH * i + 0.5, SQUARE_LENGTH * BOARD_SIZE + 0.5);
+    context.moveTo(0, SQUARE_LENGTH * i + 0.5);
+    context.lineTo(SQUARE_LENGTH * BOARD_SIZE + 0.5, SQUARE_LENGTH * i + 0.5);
   }
-};
+  context.stroke();
+  fillCircle(2 * SQUARE_LENGTH + 0.5, 2 * SQUARE_LENGTH + 0.5, 3, "black");
+  fillCircle(2 * SQUARE_LENGTH + 0.5, 6 * SQUARE_LENGTH + 0.5, 3, "black");
+  fillCircle(6 * SQUARE_LENGTH + 0.5, 2 * SQUARE_LENGTH + 0.5, 3, "black");
+  fillCircle(6 * SQUARE_LENGTH + 0.5, 6 * SQUARE_LENGTH + 0.5, 3, "black");
+  reversi.drawDisks();
+  if (reversi.turn == aiTurn)
+    setTimeout(function () {
+      reversi.moveByAi();
+    }, 200);
+
+  canvas.onclick = function () {
+    var boardCoordinateX_Clicked = getBoardCoordinate("x");
+    var boardCoordinateY_Clicked = getBoardCoordinate("y");
+    if (reversi.countFlippableDisks(boardCoordinateX_Clicked, boardCoordinateY_Clicked, reversi.turn) > 0) {
+      reversi.flipDisks(boardCoordinateX_Clicked, boardCoordinateY_Clicked);
+      reversi.drawDisks();
+      reversi.turn = -reversi.turn
+      reversi.alertPassMessage();
+      reversi.pass();
+      setTimeout(function () {
+        while (reversi.turn == aiTurn && reversi.countPuttablePositions(reversi.turn) > 0)
+          reversi.moveByAi();
+        if (reversi.countPuttablePositions(reversi.turn) == 0)
+          reversi.alertResultMessage();
+      }, 200);
+    }
+  }
+}
+
+newGame(WHITE);
