@@ -1,23 +1,43 @@
-<!DOCTYPE html>
-<html lang="ja">
-<html>
+body {
+  background-color: #999999;
+  text-align: center;
+  padding: 50px 0px;
+}
 
-<head>
-  <meta charset="utf-8">
-  <title>オセロ</title>
-  <link rel="stylesheet" href="reversi.css">
-</head>
 
-<body>
-  <div id="wrapper">
-    <canvas id="reversiCanvas" width="800.5" height="800.5"></canvas>
-  </div>
-  <form>
-    <button type="button" class="vs-white" id="a">先手（黒）でNew Game</button>
-    <button type="button" class="vs-black" id="b"> 後手（白）でNew Game</button>
-    <button type="button" class="vs-person" id="c">人対人でNew Game</button>
-  </form>
-  <script src="reversi.js"></script>
-</body>
+canvas {
+  border: 1px solid black;
+  background-color: green;  
+}
 
-</html>
+button.vs-white {
+  background-color: black;
+  border: none;
+  color: white;
+  width: 264px;
+  text-align: center;
+  display: inline-block;
+  margin: 0px;
+  font-size: 16px;
+}
+
+button.vs-black {
+  background-color: white;
+  border: none;
+  color: black;
+  width: 264px;
+  text-align: center;
+  margin: 0px;
+   font-size: 16px;
+}
+
+button.vs-person {
+  background-color: white;
+  border: none;
+  color: black;
+  width: 264px;
+  text-align: center;
+  display: inline-block;
+  margin: 0px;
+  font-size: 16px;
+}
