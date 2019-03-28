@@ -4,11 +4,6 @@ body {
   vertical-align: center;
 }
 
-#reversi-canvas {
-  height: 93vh;
-  width: 93vh;
-}
-
 canvas {
   border: 1px solid black;
   background-color: green;  
