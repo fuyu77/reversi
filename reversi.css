@@ -17,7 +17,7 @@ button.vs-white {
   display: inline-block;
   margin: 0px;
   font-size: 16px;
-  width: 30.5vh;
+  width: 264px;
 }
 
 button.vs-black {
@@ -27,7 +27,7 @@ button.vs-black {
   text-align: center;
   margin: 0px;
   font-size: 16px;
-  width: 30.5vh;
+  width: 264px;
 }
 
 button.vs-person {
@@ -39,5 +39,5 @@ button.vs-person {
   margin: 0px;
   font-size: 16px;
   background-color: green;
-  width: 30.5vh;
+  width: 264px;
 }
