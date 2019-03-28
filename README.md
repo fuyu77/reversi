@@ -4,4 +4,4 @@
 
 http://fuyu77.github.io/reversi/
 
-↑このURLで対戦できます。
+↑このURLで遊べます。
