@@ -286,7 +286,7 @@ Reversi.prototype.flipDisksByAi = function () {
   setPriority(flipDisksIfCanPut, true);
 }
 
-var canvas = document.getElementById("reversiCanvas");
+var canvas = document.getElementById("reversi-canvas");
 var context = canvas.getContext("2d");
 
 function newGame(aiTurn) {

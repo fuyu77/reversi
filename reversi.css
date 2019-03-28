@@ -1,9 +1,13 @@
 body {
   background-color: #999999;
   text-align: center;
-  padding: 50px 0px;
+  vertical-align: center;
 }
 
+#reversi-canvas {
+  height: 93vh;
+  width: 93vh;
+}
 
 canvas {
   border: 1px solid black;
@@ -14,31 +18,31 @@ button.vs-white {
   background-color: black;
   border: none;
   color: white;
-  width: 264px;
   text-align: center;
   display: inline-block;
   margin: 0px;
   font-size: 16px;
+  width: 30.5vh;
 }
 
 button.vs-black {
   background-color: white;
   border: none;
   color: black;
-  width: 264px;
   text-align: center;
   margin: 0px;
-   font-size: 16px;
+  font-size: 16px;
+  width: 30.5vh;
 }
 
 button.vs-person {
   background-color: white;
   border: none;
   color: white;
-  width: 264px;
   text-align: center;
   display: inline-block;
   margin: 0px;
   font-size: 16px;
   background-color: green;
+  width: 30.5vh;
 }
